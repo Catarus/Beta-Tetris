@@ -205,6 +205,7 @@ while not done:
                 pressing_down = False
             if event.key == pygame.K_r:
                 game.__init__(20, 10)
+                pressing_down = False
             if event.key == pygame.K_ESCAPE:
                 stopGame()
 
