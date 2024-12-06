@@ -243,7 +243,7 @@ while not done:
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
     font2 = pygame.font.SysFont('Calibri', 100, True, False)
     text = font.render("Очки: " + str(game.score), True, WHITE)
-    text_level = font.render(f"Level: {game.level}", True, (255, 255, 255))
+    text_level = font.render(f"Уровень: {game.level}", True, (255, 255, 255))
 
     text_game_over = font1.render("Конец игры", True, (255, 0, 0))
     text_game_over1 = font1.render("Повторить: R", True, (255, 0, 0))
