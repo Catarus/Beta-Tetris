@@ -184,12 +184,13 @@ while not done:
     if counter % (fps // game.level // 2) == 0 or pressing_down:
         if game.state == "Начать":
             game.go_down()
+
     keys = pygame.key.get_pressed()  # Получить текущее состояние всех клавиш
-        if keys[pygame.K_DOWN]:
-            pressing_down = True
+    if keys[pygame.K_DOWN]:
+        pressing_down = True
     else:
         pressing_down = False  # Сбросить, когда клавиша не нажата
-
+        
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
