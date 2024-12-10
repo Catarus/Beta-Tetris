@@ -106,7 +106,7 @@ class Tetris:
 
     def update_level(self):
         # Увеличиваем уровень каждые 10 уничтоженных линий
-        if self.score >= self.level * 10:
+        if self.score >= self.level * 25:
             self.level += 1
             self.fall_speed = max(0.1, self.fall_speed - 0.05)  # Увеличиваем скорость падения
 
