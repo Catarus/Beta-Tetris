@@ -4,48 +4,47 @@ import pygame
 import random
 import time
 
-colors   = [
-    (0, 0, 0),  # Черный (фон)
-    (0, 255, 255),  # I
-    (255, 255, 0),  # O
-    (128, 0, 128),  # T
-    (0, 255, 0),    # S
-    (255, 0, 0),    # Z
-    (255, 165, 0),  # L
-    (0, 0, 255),    # J
+colors = [
+    (0, 0, 0),       # Черный (фон)
+    (0, 255, 255),   # I - Голубой
+    (255, 0, 0),     # Z - Красный
+    (0, 255, 0),     # S - Зелёный
+    (0, 0, 255),     # J - Синий
+    (255, 165, 0),   # L - Оранжевый
+    (128, 0, 128),   # T - Фиолетовый
+    (255, 255, 0)    # O - Жёлтый
 ]
-
 
 class Figure:
     x = 0
     y = 0
 
     figures = [
-        [[1, 5, 9, 13], [4, 5, 6, 7]],
-        [[4, 5, 9, 10], [2, 6, 5, 9]],
-        [[6, 7, 9, 10], [1, 5, 6, 10]],
-        [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]],
-        [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]],
-        [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]],
-        [[1, 2, 5, 6]],
+        [[1, 5, 9, 13], [4, 5, 6, 7]],  # J
+        [[4, 5, 9, 10], [2, 6, 5, 9]],   # S
+        [[2, 3, 5, 6], [1, 5, 6, 10]],  # Z
+        [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]],  # T
+        [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]],  # I
+        [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]],  # O
+        [[1, 2, 5, 6]]  # L
     ]
 
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.type = random.randint(0, len(self.figures) - 1)
-        self.color = random.randint(1, len(colors) - 1)
+        self.type = random.randint(0, len(self.figures) - 1)  # Выбираем случайный тип фигуры
+        self.color = self.type + 1  # Цвет фигуры соответствует её типу
         self.rotation = 0
 
     def image(self):
         return self.figures[self.type][self.rotation]
 
     def rotate(self):
-        self.rotation = (self.rotation - 1) % len(self.figures[self.type])
-
+        self.rotation = (self.rotation + 1) % len(self.figures[self.type])
 
 class Tetris:
     def __init__(self, height, width):
+        self.next_figure = None  # Следующая фигура
         self.level = 1  # Начальный уровень
         self.score = 0
         self.lines_cleared = 0  # Количество уничтоженных линий
@@ -72,7 +71,10 @@ class Tetris:
             self.field.append(new_line)
 
     def new_figure(self):
-        self.figure = Figure(3, 0)
+        if self.next_figure is None:
+            self.next_figure = Figure(3, 0)
+        self.figure = self.next_figure
+        self.next_figure = Figure(3, 0)
 
     def intersects(self):
         intersection = False
@@ -125,7 +127,7 @@ class Tetris:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key != pygame.K_SPACE:
-                    time.sleep(0.8)  
+                    time.sleep(0.8)
 
         for i in range(4):
             for j in range(4):
@@ -160,7 +162,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
 
-size = (400, 500)
+size = (600, 500)
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Tetris")
@@ -190,7 +192,7 @@ while not done:
         pressing_down = True
     else:
         pressing_down = False  # Сбросить, когда клавиша не нажата
-        
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
@@ -236,6 +238,19 @@ while not done:
                 pygame.draw.rect(screen, colors[game.field[i][j]],
                                  [game.x + game.zoom * j + 1, game.y + game.zoom * i + 1, game.zoom - 2, game.zoom - 1])
 
+    next_figure_x = game.x + game.zoom * (game.width + 6) + 10  # Добавляем дополнительный отступ вправо
+    next_figure_y = game.y  # Координата y остаётся прежней
+
+    # Рисуем следующую фигуру в новом месте
+    if game.next_figure is not None:
+        for i in range(4):
+            for j in range(4):
+                p = i * 4 + j
+                if p in game.next_figure.image():
+                    pygame.draw.rect(screen, colors[game.next_figure.color],
+                                     [next_figure_x + game.zoom * j + 1,
+                                      next_figure_y + game.zoom * i + 1,
+                                      game.zoom - 2, game.zoom - 2])
     if game.figure is not None:
         for i in range(4):
             for j in range(4):
@@ -251,12 +266,14 @@ while not done:
     font2 = pygame.font.SysFont('Calibri', 100, True, False)
     text = font.render("Очки: " + str(game.score), True, WHITE)
     text_level = font.render(f"Уровень: {game.level}", True, (255, 255, 255))
+    text_next_figure = font.render("Следующая фигура:", True, WHITE)
 
-    text_game_over = font1.render("Конец игры", True, (255, 0, 0))
-    text_game_over1 = font1.render("Повторить: R", True, (255, 0, 0))
-    text_game_over2 = font1.render("Выйти:  Esc", True, (255, 0, 0))
-    text_game_over3 = font1.render("Очки: " + str(game.score), True, (255, 0, 0))
+    text_game_over = font1.render("Конец игры", True, (255, 255, 255))
+    text_game_over1 = font1.render("Повторить: R", True, (255, 255, 255))
+    text_game_over2 = font1.render("Выйти:  Esc", True, (255, 255, 255))
+    text_game_over3 = font1.render("Очки: " + str(game.score), True, (255, 255, 255))
 
+    screen.blit(text_next_figure, [ 350, 10])
     screen.blit(text, [0, 0])
     screen.blit(text_level, [0, 30])
 
